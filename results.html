@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Tibetan Astrology Results</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Your Tibetan Astrology Results</h1>
+            <div class="subtitle">Based on the traditional Tibetan lunar calendar</div>
+        </header>
+        
+        <div id="result-container" class="result-container">
+            <div class="loading" id="result-loading">
+                <div class="spinner"></div>
+            </div>
+            
+            <div class="result-header">
+                <h2 id="result-title">Your Tibetan Astrology Reading</h2>
+            </div>
+            
+            <div class="animal-display">
+                <div class="animal-image" id="animal-emoji">🐯</div>
+                <div class="animal-text" id="animal-text">Water Tiger</div>
+            </div>
+            
+            <div class="summary">
+                <h3>Your Element and Animal Sign</h3>
+                <p id="summary-text"></p>
+            </div>
+            
+            <div class="actions">
+                <a href="index.html" class="back-btn">Calculate Another Date</a>
+                <button id="download-btn" class="download-btn">Download Your Results</button>
+            </div>
+        </div>
+        
+        <footer>
+            <p>This calculator is designed to help preserve and share the Tibetan astrological tradition. The information provided is based on traditional Tibetan astrology practices and should be enjoyed as cultural knowledge.</p>
+        </footer>
+    </div>
+
+    <script src="data.js"></script>
+    <script>
+    // Get the Tibetan year based on date of birth
+    function getTibetanYear(birthDate) {
+        const birthYear = birthDate.getFullYear();
+        
+        // Check if the year is in our losarDates object
+        if (losarDates[birthYear]) {
+            // Check if birth date is before Losar of that year
+            if (birthDate < losarDates[birthYear].date) {
+                return birthYear - 1;
+            }
+            return birthYear;
+        }
+        
+        // Fallback for years not in our dataset
+        // For years before 1927
+        if (birthYear < 1927) {
+            // Approximate Losar to mid-February
+            const approxLosar = new Date(birthYear, 1, 15); // February 15th
+            if (birthDate < approxLosar) {
+                return birthYear - 1;
+            }
+            return birthYear;
+        }
+        
+        // For years after 2046
+        if (birthYear > 2046) {
+            // Approximate Losar to mid-February
+            const approxLosar = new Date(birthYear, 1, 15); // February 15th
+            if (birthDate < approxLosar) {
+                return birthYear - 1;
+            }
+            return birthYear;
+        }
+        
+        return birthYear;
+    }
+
+    // Get animal sign based on Tibetan year
+    function getAnimalSign(tibetanYear) {
+        // First check if we have this year in our dataset
+        if (losarDates[tibetanYear]) {
+            return losarDates[tibetanYear].animal;
+        }
+        
+        // Fallback calculation for years not in our dataset
+        // The baseline is 1900 (Metal-Rat year)
+        // Calculate the position in the 12-year cycle
+        const animalIndex = (tibetanYear - 1900) % 12;
+        return animals[animalIndex >= 0 ? animalIndex : animalIndex + 12];
+    }
+
+    // Get element based on Tibetan year
+    function getElement(tibetanYear) {
+        // First check if we have this year in our dataset
+        if (losarDates[tibetanYear]) {
+            return losarDates[tibetanYear].element;
+        }
+        
+        // Fallback calculation for years not in our dataset
+        // Elements repeat in 10-year cycles, each element for 2 years
+        // The baseline is 1900 (Metal year)
+        const elementIndex = Math.floor(((tibetanYear - 1900) % 10) / 2);
+        return elements[elementIndex >= 0 ? elementIndex : elementIndex + 5];
+    }
+
+    // Add animation to elements
+    function addFadeInAnimation(element, delay = 0) {
+        element.style.opacity = '0';
+        element.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+            element.style.transition = 'opacity 0.5s, transform 0.5s';
+            element.style.opacity = '1';
+            element.style.transform = 'translateY(0)';
+        }, delay);
+    }
+
+    // Generate the text file content with the results
+    function generateResultText(animal, element, summary) {
+        return `Your Tibetan Astrological Sign: ${element} ${animal}
+
+${summary}`;
+    }
+
+    // Handle downloading the text file with results
+    function downloadResults(animal, element, summary) {
+        const textContent = generateResultText(animal, element, summary);
+        const blob = new Blob([textContent], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        
+        const downloadLink = document.createElement('a');
+        downloadLink.href = url;
+        downloadLink.download = 'my_tibetan_astrology.txt';
+        downloadLink.style.display = 'none';
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        
+        // Clean up
+        setTimeout(() => {
+            document.body.removeChild(downloadLink);
+            URL.revokeObjectURL(url);
+        }, 100);
+    }
+
+    // Load and display results
+    document.addEventListener('DOMContentLoaded', function() {
+        // Show the loading spinner
+        document.getElementById('result-loading').classList.add('active');
+        
+        // Get the date of birth from localStorage
+        const dobString = localStorage.getItem('astrology-dob');
+        
+        // If no date was provided, redirect back to the input page
+        if (!dobString) {
+            window.location.href = 'index.html';
+            return;
+        }
+        
+        // Process the date and calculate results
+        setTimeout(() => {
+            const dob = new Date(dobString);
+            const tibetanYear = getTibetanYear(dob);
+            const animal = getAnimalSign(tibetanYear);
+            const element = getElement(tibetanYear);
+            
+            // Update the UI with the results
+            document.getElementById('animal-emoji').textContent = animalEmojis[animal] || '🔮';
+            document.getElementById('animal-text').textContent = `${element} ${animal}`;
+            document.getElementById('summary-text').textContent = animalData[animal].summary;
+            
+            // Hide loading spinner
+            document.getElementById('result-loading').classList.remove('active');
+            
+            // Make the result container visible
+            document.getElementById('result-container').style.display = 'block';
+            
+            // Add animations
+            addFadeInAnimation(document.querySelector('.animal-display'), 0);
+            addFadeInAnimation(document.querySelector('.summary'), 400);
+            addFadeInAnimation(document.querySelector('.actions'), 800);
+            
+            // Set up download button
+            document.getElementById('download-btn').addEventListener('click', function() {
+                downloadResults(animal, element, animalData[animal].summary);
+            });
+        }, 1000);
+    });
+    </script>
+</body>
+</html>

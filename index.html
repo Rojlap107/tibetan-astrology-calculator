@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tibetan Astrology Calculator</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Tibetan Astrology Calculator</h1>
+            <div class="subtitle">Discover your true animal sign based on the Tibetan calendar</div>
+        </header>
+        
+        <div class="form-container">
+            <div class="loading" id="form-loading">
+                <div class="spinner"></div>
+            </div>
+            <h2>Enter Your Birth Date</h2>
+            
+            <div class="form-group">
+                <label for="dob">Date of Birth:</label>
+                <input type="date" id="dob" required>
+            </div>
+            
+            <button id="calculate-btn">Discover Your Tibetan Astrology</button>
+        </div>
+        
+        <div class="about-section">
+            <h2>About Tibetan Astrology</h2>
+            <p>Tibetan astrology (Tsi) is a complex system that blends indigenous Tibetan practices with elements from Chinese and Indian traditions. While many people identify their animal sign based on the Western calendar year, traditional Tibetan astrology depends on the Tibetan lunar calendar, which begins with Losar (Tibetan New Year), usually occurring in February or March.</p>
+            <p>This means that people born in January or February might actually belong to the previous year's animal sign according to Tibetan tradition. This calculator takes the Losar dates into account to determine your true Tibetan astrological sign.</p>
+            <p>Each animal sign is also associated with one of the five elements (Wood, Fire, Earth, Metal/Iron, Water), creating a 60-year cycle. Your element and animal combination provides deeper insights into your personality, strengths, and challenges.</p>
+        </div>
+        
+        <footer>
+            <p>This calculator is designed to help preserve and share the Tibetan astrological tradition. The information provided is based on traditional Tibetan astrology practices and should be enjoyed as cultural knowledge.</p>
+        </footer>
+    </div>
+
+    <script src="data.js"></script>
+    <script>
+    // Set default date to today
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set default date to today
+        const today = new Date();
+        const formattedDate = today.toISOString().split('T')[0];
+        document.getElementById('dob').value = formattedDate;
+        
+        // Add event listener to the calculate button
+        document.getElementById('calculate-btn').addEventListener('click', function() {
+            const dobString = document.getElementById('dob').value;
+            
+            if (!dobString) {
+                alert('Please enter your date of birth');
+                return;
+            }
+            
+            // Show loading spinner
+            document.getElementById('form-loading').classList.add('active');
+            
+            // Store the date in localStorage to be read by the results page
+            localStorage.setItem('astrology-dob', dobString);
+            
+            // Redirect to results page after a short delay (for loading effect)
+            setTimeout(function() {
+                window.location.href = 'results.html';
+            }, 1000);
+        });
+    });
+    </script>
+</body>
+</html>
